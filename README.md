@@ -3,6 +3,338 @@
 
 ---
 
+## PROBLEM STATEMENT
+
+### Background
+
+The global transition to renewable energy faces a critical challenge: **intermittency**. Solar photovoltaic (PV) systems generate power only during daylight hours, while residential and commercial electricity demand peaks in evenings. This mismatch creates three major problems:
+
+1. **Economic Inefficiency**: Homeowners with solar panels export excess daytime generation at low feed-in tariff rates (~$0.05/kWh), then import evening power at retail prices (~$0.15-0.30/kWh)
+2. **Grid Instability**: High solar penetration causes voltage fluctuations and reverse power flow, requiring expensive grid infrastructure upgrades
+3. **Underutilization**: Without storage, 30-60% of PV generation is wasted (curtailed or exported at minimal value)
+
+### Current Solutions and Their Limitations
+
+| Solution | Limitations |
+|----------|-------------|
+| **Grid-Tied PV Only** | No storage → 0% self-consumption during non-solar hours |
+| **Oversized Battery Systems** | High capital cost ($8,000-15,000), 10-15 year payback period |
+| **Rule-Based Controllers** | Static logic can't adapt to weather variability, electricity price changes, or seasonal patterns |
+| **Commercial Optimization Tools** | Expensive ($500-2,000/year licenses), black-box algorithms, not customizable for research |
+
+### The Problem We Address
+
+**How can we design and operate residential solar + battery systems to maximize economic value and energy independence while minimizing costs?**
+
+This requires solving **three interconnected optimization problems**:
+
+1. **Realistic Load Forecasting**: Conventional methods use historical averages, failing to capture daily/seasonal variability and occupant behavior patterns
+2. **System Sizing Optimization**: Selecting optimal PV capacity and battery size from thousands of possible combinations is computationally expensive (brute-force search takes hours)
+3. **Real-Time Dispatch Control**: Deciding when to charge/discharge batteries requires predicting future conditions — rule-based controllers are suboptimal
+
+### Impact and Relevance
+
+- **Residential Sector**: 37% of global electricity consumption (IEA, 2024)
+- **Solar+Storage Market**: Growing at 25% CAGR, projected $200B by 2030
+- **Carbon Reduction**: Optimized systems increase self-consumption from 30% → 70%, displacing fossil fuel generation
+- **Grid Services**: Well-controlled batteries can provide frequency regulation (additional revenue streams)
+
+---
+
+## ABSTRACT
+
+This capstone project presents the **Intelligent Energy Management Simulator (IEMS)**, a comprehensive software platform that applies machine learning and optimization algorithms to the design and operation of residential solar-battery-grid energy systems.
+
+### Objective
+
+Develop an AI-powered simulation framework that outperforms conventional methods in three domains:
+1. **Synthetic load profile generation** using Markov Chains and KMeans clustering
+2. **System sizing optimization** using Genetic Algorithms
+3. **Real-time energy dispatch control** using Deep Reinforcement Learning (DQN)
+
+### Methodology
+
+IEMS employs a **phased iterative development approach** with Clean Architecture principles:
+
+- **Phase 0-1 (Completed)**: Established software architecture and implemented physics-based simulation engine validated against NREL standards (86% test coverage, 34 passing tests)
+- **Phases 2-4 (Planned)**: Implement three AI "brains" with statistical validation against baseline methods (paired t-tests, p-value < 0.05, minimum 5% improvement threshold)
+- **Phases 5-6 (Planned)**: Deploy REST API and React-based web dashboard for interactive simulation
+
+### System Architecture
+
+IEMS uses a **5-layer Clean Architecture**:
+1. **Domain Layer**: Interface-based design (IWeatherService, IPhysicsEngine, ILoadGenerator, IOptimizer, IController) enabling dependency inversion and testability
+2. **Implementation Layer**: Three AI modules + physics simulation + NASA POWER weather integration
+3. **Application Layer**: Orchestration logic coordinating AI workflows
+4. **Infrastructure Layer**: Dependency injection, configuration management, structured logging
+5. **Presentation Layer**: FastAPI REST endpoints + React dashboard
+
+### Key Technologies
+
+| Domain | Technology | Rationale |
+|--------|-----------|-----------|
+| **Backend** | Python 3.10+, FastAPI | Async I/O, rich ML ecosystem, rapid development |
+| **ML - Brain 1a** | scikit-learn (KMeans) | Load pattern clustering and Markov modeling |
+| **Optimization - Brain 1b** | DEAP (Genetic Algorithm) | Multi-objective optimization with constraints |
+| **Deep Learning - Brain 2** | PyTorch (DQN) | Reinforcement learning for sequential decision-making |
+| **Weather Data** | NASA POWER API | Free, global coverage, 40+ years historical data |
+| **Frontend** | React + TypeScript | Component-based UI, type safety |
+
+### Results to Date (Phase 1)
+
+- **Validated Physics Engine**: 1-year simulation (8760 hours) runs in <1 second, accuracy within 5% of NREL SAM
+- **48-Hour Test Case**: Demonstrated complete PV-battery-grid interaction with energy balance validation
+- **Production-Quality Code**: 86% test coverage, full type hints, comprehensive documentation
+
+**Energy Balance Example (10kW PV, 20kWh battery, 102kWh/day load):**
+- PV Generation: 52.88 kWh/day
+- Grid Import: 94.46 kWh/day (92.6% unmet load)
+- Self-Sufficiency: 7.4%
+- **Conclusion**: System undersized → Brain 1b optimization needed
+
+### Expected Contributions
+
+1. **Academic**: Open-source framework for energy systems research, extensible baseline implementations
+2. **Industry**: Demonstrate 15-30% cost reduction vs. rule-based controllers (hypothesis)
+3. **Methodological**: Rigorous validation framework with statistical significance testing (unlike many AI papers lacking baselines)
+
+### Keywords
+
+Energy Management, Deep Reinforcement Learning, Genetic Algorithm, Load Forecasting, Solar PV, Battery Storage, Multi-Objective Optimization, Clean Architecture
+
+---
+
+## SCOPE
+
+### 3.1 In-Scope
+
+#### **System Components Covered**
+
+✅ **Solar PV System**
+- Capacity range: 0-50 kW (residential/small commercial)
+- Temperature derating: -0.4%/°C coefficient
+- Inverter efficiency: 96% (industry standard)
+- Panel efficiency: 15-22% (configurable)
+
+✅ **Battery Energy Storage System (BESS)**
+- Capacity range: 0-100 kWh
+- Power rating: 0-20 kW (C-rate: 0.2-1.0)
+- Technology: Lithium-ion model (95% round-trip efficiency)
+- SoC limits: 20-90% (safety margins)
+- Degradation modeling: Cycle counting
+
+✅ **Grid Connection**
+- Bidirectional import/export
+- Time-of-use (TOU) pricing support
+- Net metering simulation
+- Demand charges (future)
+
+✅ **Load Modeling**
+- Residential profiles: 2-10 kW average
+- Commercial profiles: 10-50 kW average
+- Hourly resolution (15-min future enhancement)
+- Seasonal variation
+
+#### **AI/ML Capabilities**
+
+✅ **Brain 1a: Load Generator**
+- KMeans clustering (2-10 clusters)
+- Markov Chain transition modeling
+- Synthetic profile generation (24 hours to 1 year)
+- Baseline: Flat/average load profile
+
+✅ **Brain 1b: System Optimizer**
+- Genetic Algorithm (DEAP framework)
+- Multi-objective fitness: cost, self-sufficiency, grid independence
+- Constraint handling: budget, roof area, installation limits
+- Population: 50-200, generations: 30-100
+- Baseline: Brute-force grid search
+
+✅ **Brain 2: Smart Controller**
+- Deep Q-Network (DQN) with experience replay
+- State space: [SoC, PV power, load, time, price]
+- Action space: [charge from grid, charge from PV, discharge, standby]
+- Reward: Minimize cost + battery degradation
+- Baseline: Rule-based controller
+
+#### **Geographic Coverage**
+
+✅ **Weather Data**: Global coverage via NASA POWER API
+- Latitude: -90° to +90°
+- Longitude: -180° to +180°
+- Historical data: 1981-present
+- Parameters: GHI, temperature, wind speed (optional)
+
+✅ **Validated Regions** (Testing):
+- Locations: USA, Europe, India, Australia
+- Climate zones: Tropical, temperate, arid
+
+#### **Simulation Capabilities**
+
+✅ **Temporal Resolution**
+- Minimum: 1 hour (default)
+- Maximum: 1 year (8760 hours)
+- Future: 15-minute intervals
+
+✅ **Scenarios Supported**
+- Grid-connected with net metering
+- Self-consumption optimization
+- Peak shaving
+- TOU arbitrage
+
+✅ **Output Metrics**
+- Economic: Total cost, NPV, payback period, LCOE
+- Energy: Self-sufficiency ratio, grid import/export, excess PV
+- Battery: Cycle count, SoC history, degradation
+- Environmental: CO₂ avoided (future)
+
+#### **Deliverables**
+
+✅ **Software Modules**
+1. Backend API (FastAPI)
+2. Physics simulation engine
+3. Weather service integration
+4. Three AI modules (Brain 1a, 1b, 2)
+5. Baseline implementations
+6. Frontend dashboard (React)
+
+✅ **Documentation**
+1. System architecture diagrams
+2. API documentation (Swagger/OpenAPI)
+3. Module READMEs with usage examples
+4. Validation methodology
+5. Final project report
+
+✅ **Testing & Validation**
+1. Unit tests (target: 90% coverage)
+2. Integration tests
+3. Baseline comparisons (statistical significance)
+4. Performance benchmarks
+
+---
+
+### 3.2 Out-of-Scope
+
+#### **System Components NOT Covered**
+
+❌ **Wind Turbines**: Only solar PV (adding wind would require new physics models and wind speed validation)
+
+❌ **Hydrogen Storage**: Only lithium-ion batteries (hydrogen electrolyzers/fuel cells too complex for capstone timeline)
+
+❌ **Electric Vehicle (EV) Integration**: No vehicle-to-grid (V2G) or EV charging optimization (separate research area)
+
+❌ **Microgrids**: Single-building focus (multi-building coordination out of scope)
+
+❌ **Generator Sets (Diesel/Gas)**: No backup generators (adds fuel cost modeling complexity)
+
+#### **Advanced Features NOT Covered**
+
+❌ **Sub-Hourly Resolution**: No 5-minute or 15-minute timesteps (NASA API provides hourly data only)
+
+❌ **Real-Time Hardware-in-Loop**: Software simulation only (no physical battery/inverter testing)
+
+❌ **Predictive Maintenance**: No failure prediction models for PV/battery components
+
+❌ **Thermal Modeling**: No detailed temperature effects on battery chemistry (use simplified efficiency curves)
+
+❌ **Multi-Year Degradation**: Battery degradation cycle-counted but not chemistry-based aging
+
+#### **ML/AI Limitations**
+
+❌ **Transfer Learning**: Models trained per-location (not pre-trained universal models)
+
+❌ **Online Learning**: DQN trained offline (not real-time adaptation during deployment)
+
+❌ **Explainable AI**: No SHAP/LIME interpretability (focus on performance metrics)
+
+❌ **Ensemble Methods**: Single algorithm per brain (no voting or stacking)
+
+#### **Deployment Scope**
+
+❌ **Production Deployment**: Academic demo only (no 24/7 uptime, no SLA guarantees)
+
+❌ **User Authentication**: No login system (open access for evaluation)
+
+❌ **Database**: CSV file storage (no PostgreSQL/MongoDB in Phases 1-6)
+
+❌ **Mobile App**: Web-only (no iOS/Android native apps)
+
+❌ **Multi-Tenancy**: Single-user simulation (no concurrent isolated workspaces)
+
+#### **Geographic Limitations**
+
+❌ **Microclimates**: NASA data is grid-based (~0.5° resolution), not rooftop-specific
+
+❌ **Shading Analysis**: No 3D building modeling or tree shade calculation
+
+❌ **Local Weather Stations**: NASA API only (no integration with local sensors)
+
+#### **Financial Modeling Limitations**
+
+❌ **Time-Value of Money**: NPV calculation assumes constant discount rate (no inflation modeling)
+
+❌ **Incentives/Rebates**: No region-specific tax credits or subsidies (user must input manually)
+
+❌ **Financing Options**: No loan/lease modeling (assumes cash purchase)
+
+❌ **Dynamic Electricity Pricing**: Support TOU but not real-time pricing (RTP)
+
+---
+
+### 3.3 Future Enhancements (Post-Capstone)
+
+🔮 **Phase 8+** (If project continues beyond June 2026):
+
+1. **15-Minute Resolution**: Integrate NREL NSRDB for sub-hourly data
+2. **EV Charging**: Add vehicle battery as flexible load
+3. **Multi-Building Microgrids**: Community-scale optimization
+4. **Real-Time Deployment**: Connect to SCADA systems for live control
+5. **Cloud-Native Architecture**: Kubernetes deployment with auto-scaling
+6. **Advanced RL**: Policy gradient methods (A3C, PPO) vs. DQN
+7. **Uncertainty Quantification**: Bayesian neural networks for confidence intervals
+8. **Carbon Accounting**: Life-cycle emissions (manufacturing, disposal)
+
+---
+
+### 3.4 Assumptions Defining Scope
+
+1. **Single Location**: Each simulation for one geographic point (no multi-site optimization)
+2. **Perfect Forecasts**: Weather and load known in advance (no forecasting error modeling)
+3. **Ideal Hardware**: No inverter clipping, battery cell imbalance, or component failures
+4. **Stable Grid**: No blackouts, voltage issues, or frequency deviations
+5. **Fixed Tariffs**: Electricity prices constant (no market volatility)
+6. **Academic Use**: Not safety-certified for controlling real systems
+
+---
+
+### 3.5 Scope Justification
+
+**Why These Boundaries:**
+
+| Limitation | Reason |
+|------------|--------|
+| **No wind turbines** | Wind requires different physics (aerodynamics), separate dataset, doubles validation effort |
+| **No EV integration** | EV adds stochastic arrival/departure events, travel demand forecasting — separate thesis topic |
+| **Hourly resolution** | NASA POWER provides hourly data (sub-hourly requires paid APIs like NREL NSRDB) |
+| **No production deployment** | Safety certification, 24/7 monitoring, cybersecurity audits beyond academic scope |
+| **Single location** | Multi-site adds communication delays, privacy concerns, distributed optimization complexity |
+
+**Scope Adequacy:**
+
+The defined scope is **sufficient to demonstrate**:
+✅ End-to-end ML/optimization pipeline  
+✅ Statistical validation methodology  
+✅ Production-quality software engineering  
+✅ Multi-disciplinary integration (physics + ML + web)  
+
+The scope is **achievable within**:
+✅ 6-month timeline  
+✅ $0 budget  
+✅ 2-3 student team  
+✅ Part-time commitment  
+
+---
+
 ## 1. REQUIREMENTS SPECIFICATION
 
 ### 1.1 Functional Requirements
